@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, NamedTuple
 
 import numpy as np
-from numpy.typing import NDArray
 
+from neurocarto.typing import *
 from .surrounding import surrounding, get_surrounding
 
 if TYPE_CHECKING:
@@ -35,11 +35,11 @@ class ClusteringEdges(NamedTuple):
     """
 
     @property
-    def x(self) -> NDArray[np.int_]:
+    def x(self) -> Array[int, N]:
         return np.array([it[0] for it in self.edges])
 
     @property
-    def y(self) -> NDArray[np.int_]:
+    def y(self) -> Array[int, N]:
         return np.array([it[1] for it in self.edges])
 
     def with_shank(self, s: int) -> ClusteringEdges:
@@ -69,9 +69,9 @@ class ClusteringEdges(NamedTuple):
 
 
 def find_clustering(self: BlueprintFunctions,
-                    blueprint: NDArray[np.int_],
+                    blueprint: Array[int, A],
                     categories: int | list[int] = None, *,
-                    diagonal=True) -> NDArray[np.int_]:
+                    diagonal=True) -> Array[int, A]:
     """
     find electrode clustering with the same category.
 
@@ -87,7 +87,7 @@ def find_clustering(self: BlueprintFunctions,
     if isinstance(categories, int):
         categories = [categories]
 
-    ret: NDArray[np.int_] = np.arange(len(blueprint)) + 1
+    ret: Array[int, A] = np.arange(len(blueprint)) + 1
 
     unset = self.CATE_UNSET
     ret[blueprint == unset] = 0
@@ -119,7 +119,7 @@ def find_clustering(self: BlueprintFunctions,
 
 
 def clustering_edges(self: BlueprintFunctions,
-                     blueprint: NDArray[np.int_],
+                     blueprint: Array[int, A],
                      categories: int | list[int] = None) -> list[ClusteringEdges]:
     """
     For each clustering block, calculate its edges.
@@ -138,7 +138,7 @@ def clustering_edges(self: BlueprintFunctions,
         if cluster == 0:
             continue
 
-        area: NDArray[np.bool_] = clustering == cluster
+        area: Array[bool, A] = clustering == cluster
 
         c = np.unique(blueprint[area])
         assert len(c) == 1
@@ -164,7 +164,7 @@ def clustering_edges(self: BlueprintFunctions,
 
 
 def _cluster_edge(self: BlueprintFunctions,
-                  area: NDArray[np.bool_],
+                  area: Array[bool, N],
                   i: int) -> list[tuple[int, int, int]]:
     """
 
@@ -311,7 +311,7 @@ def _cluster_edge(self: BlueprintFunctions,
 def edge_rastering(self: BlueprintFunctions,
                    edges: ClusteringEdges | list[ClusteringEdges], *,
                    fill=False,
-                   overwrite=False) -> NDArray[np.int_]:
+                   overwrite=False) -> Array[int, A]:
     """
     For given edges, put them on the blueprint.
 
@@ -335,7 +335,7 @@ def edge_rastering(self: BlueprintFunctions,
     return ret
 
 
-def _edge_rastering(self: BlueprintFunctions, edge: ClusteringEdges, fill=False) -> NDArray[np.int_]:
+def _edge_rastering(self: BlueprintFunctions, edge: ClusteringEdges, fill=False) -> Array[int, A]:
     dx = self.dx
     dy = self.dy
     pos = self._position_index

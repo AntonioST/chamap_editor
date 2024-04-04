@@ -1,17 +1,17 @@
 from typing import Sequence
 
 import numpy as np
-from numpy.typing import NDArray
 
 from neurocarto.probe import M, E
+from neurocarto.typing import *
 from neurocarto.util.util_blueprint import BlueprintFunctions
 
 __all__ = ['category_mask', 'invalid', 'merge_blueprint']
 
 
 def category_mask(self: BlueprintFunctions,
-                  blueprint: NDArray[np.int_],
-                  categories: int | list[int] = None) -> NDArray[np.bool_]:
+                  blueprint: Array[int, A],
+                  categories: int | list[int] = None) -> Array[bool, A]:
     if categories is None:
         categories = list(self.categories.values())
         try:
@@ -34,10 +34,10 @@ def category_mask(self: BlueprintFunctions,
 
 
 def invalid(self: BlueprintFunctions,
-            blueprint: NDArray[np.int_],
-            electrodes: NDArray[np.int_] | NDArray[np.bool_],
+            blueprint: Array[int, A],
+            electrodes: Array[int, N] | Array[bool, A],
             value: int = None, *,
-            overwrite: bool = False) -> NDArray:
+            overwrite: bool = False) -> Array[bool, A] | Array[int, A]:
     if electrodes.dtype == np.bool_:
         blueprint[electrodes]  # check shape
         protected = electrodes
@@ -68,8 +68,8 @@ def invalid(self: BlueprintFunctions,
 
 
 def apply_electrode_mask(self: BlueprintFunctions,
-                         masking: NDArray[np.bool_],
-                         electrodes: int | Sequence[E] | NDArray[np.bool_] | NDArray[np.int_] | M = None) -> NDArray[np.bool_]:
+                         masking: Array[bool, A],
+                         electrodes: int | Sequence[E] | Array[bool, A] | Array[int, N] | M = None) -> Array[bool, A]:
     if electrodes is None:
         pass
     elif isinstance(electrodes, (int, np.integer)):
@@ -96,8 +96,8 @@ def apply_electrode_mask(self: BlueprintFunctions,
 
 
 def merge_blueprint(self: BlueprintFunctions,
-                    blueprint: NDArray[np.int_],
-                    other: NDArray[np.int_] | BlueprintFunctions) -> NDArray[np.int_]:
+                    blueprint: Array[int, A],
+                    other: Array[int, A] | BlueprintFunctions) -> Array[int, A]:
     if isinstance(other, BlueprintFunctions):
         if (other := other.blueprint()) is None:
             raise TypeError()

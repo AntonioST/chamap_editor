@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from numpy.typing import NDArray
 
 from neurocarto.probe import ProbeDesp, ElectrodeDesp, M
+from neurocarto.typing import *
 from neurocarto.util.util_blueprint import BlueprintFunctions
 from neurocarto.util.utils import SPHINX_BUILD, doc_link
 from neurocarto.views.base import ControllerView
@@ -34,7 +34,7 @@ def new_channelmap(controller: ControllerView, code: int | str) -> Any:
 
 @doc_link()
 def capture_electrode(self: BlueprintFunctions, controller: ControllerView,
-                      index: NDArray[np.int_] | NDArray[np.bool_],
+                      index: Array[int, N] | Array[bool, A],
                       state: list[int] = None):
     """{ProbeView#set_captured_electrodes()}"""
     electrodes = self.electrodes
@@ -54,7 +54,7 @@ def capture_electrode(self: BlueprintFunctions, controller: ControllerView,
 
 
 @doc_link()
-def captured_electrodes(controller: ControllerView, all=False) -> NDArray[np.int_]:
+def captured_electrodes(controller: ControllerView, all=False) -> Array[int, N]:
     """{ProbeView#get_captured_electrodes_index()}"""
     view = controller.get_app().probe_view
     if all:
@@ -68,7 +68,7 @@ def captured_electrodes(controller: ControllerView, all=False) -> NDArray[np.int
 @doc_link()
 def set_state_for_captured(self: BlueprintFunctions, controller: ControllerView,
                            state: int,
-                           index: NDArray[np.int_] | NDArray[np.bool_] = None):
+                           index: Array[int, N] | Array[bool, A] = None):
     """{ProbeView#set_state_for_captured()}"""
     if index is not None:
         capture_electrode(self, controller, index)
@@ -78,7 +78,7 @@ def set_state_for_captured(self: BlueprintFunctions, controller: ControllerView,
 @doc_link()
 def set_category_for_captured(self: BlueprintFunctions, controller: ControllerView,
                               category: int,
-                              index: NDArray[np.int_] | NDArray[np.bool_] = None):
+                              index: Array[int, N] | Array[bool, A] = None):
     """{ProbeView#set_category_for_captured()}"""
     if index is not None:
         capture_electrode(self, controller, index)
@@ -106,7 +106,7 @@ def refresh_selection(self: BlueprintFunctions, controller: ControllerView, sele
 
 @doc_link()
 def select_electrodes(self: BlueprintFunctions, chmap: M = None,
-                      blueprint: list[ElectrodeDesp] | NDArray[np.int_] = None, **kwargs) -> M:
+                      blueprint: list[ElectrodeDesp] | Array[int, A] = None, **kwargs) -> M:
     """
     Run electrode selection for a channelmap based on the blueprint.
 
@@ -129,5 +129,3 @@ def select_electrodes(self: BlueprintFunctions, chmap: M = None,
         blueprint = self.apply_blueprint(blueprint=blueprint)
 
     return desp.select_electrodes(chmap, blueprint, **kwargs)
-
-

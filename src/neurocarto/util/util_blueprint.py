@@ -1,23 +1,32 @@
+"""
+**Symbols used in this module**
+
+* ``A`` All electrode
+* ``N`` Any number
+* ``DTYPE`` Any data type
+* ``BLUEPRINT`` alias for ``Array[category:int, A]``
+* ``Array[int, N]`` usually means an index array.
+* ``Array[bool, A]`` usually means a blueprint mask.
+"""
 from __future__ import annotations
 
 import functools
-import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, overload, Generic, Final, Any
 
 import numpy as np
-from numpy.typing import NDArray
+from typing_extensions import Self
 
 from neurocarto.probe import ProbeDesp, M, E
+from neurocarto.typing import *
 from neurocarto.util.edit.checking import use_probe
 from neurocarto.util.utils import doc_link, SPHINX_BUILD
 from neurocarto.views.base import ControllerView, V
 
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
+__all__ = ['BlueprintFunctions', 'ClusteringEdges', 'blueprint_function', 'use_probe']
+
+BLUEPRINT = Array[int, N]
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -25,7 +34,6 @@ if TYPE_CHECKING:
     from neurocarto.util.probe_coor import ProbeCoordinate
     from neurocarto.views.atlas import Label
 
-    BLUEPRINT = NDArray[np.int_]
     ELECTRODES = Sequence[E]
 
 elif SPHINX_BUILD:
@@ -36,13 +44,6 @@ elif SPHINX_BUILD:
     ProbePlotElectrodeProtocol = 'neurocarto.views.blueprint_script.ProbePlotElectrodeProtocol'
 
     ELECTRODES = list[E]
-
-
-    class BLUEPRINT:
-        """Prevent sphinx from printing BLUEPRINT as ``ndarray[int64]``"""
-        pass
-
-__all__ = ['BlueprintFunctions', 'ClusteringEdges', 'blueprint_function', 'use_probe']
 
 
 def maybe_blueprint(self: BlueprintFunctions, a):
@@ -273,9 +274,9 @@ class BlueprintFunctions(Generic[M, E]):
         """all available electrodes"""
 
         if chmap is not None:
-            self.s: Final[NDArray[np.int_]] = np.array([it.s for it in self.electrodes])
-            self.x: Final[NDArray[np.int_]] = np.array([it.x for it in self.electrodes])
-            self.y: Final[NDArray[np.int_]] = np.array([it.y for it in self.electrodes])
+            self.s: Final[Array[int, A]] = np.array([it.s for it in self.electrodes])
+            self.x: Final[Array[int, A]] = np.array([it.x for it in self.electrodes])
+            self.y: Final[Array[int, A]] = np.array([it.y for it in self.electrodes])
             self.dx: Final[float] = float(np.min(np.diff(np.unique(self.x))))
             self.dy: Final[float] = float(np.min(np.diff(np.unique(self.y))))
             if self.dx <= 0 or self.dy <= 0:
@@ -347,9 +348,9 @@ class BlueprintFunctions(Generic[M, E]):
     # ==================== #
 
     @doc_link()
-    def add_electrodes(self, e: int | list[int] | NDArray[np.int_] | NDArray[np.bool_], *, overwrite=True):
+    def add_electrodes(self, e: int | list[int] | Array[int, N] | Array[bool, A], *, overwrite=True):
         """
-         Add electrode(s) *e* into the current channelmap.
+        Add electrode(s) *e* into the current channelmap.
 
         :param e: electrode index, index list, index array or index mask.
         :param overwrite: overwrite previous selected electrode.
@@ -371,7 +372,7 @@ class BlueprintFunctions(Generic[M, E]):
             self.probe.add_electrode(channelmap, t, overwrite=overwrite)
 
     @doc_link()
-    def del_electrodes(self, e: int | list[int] | NDArray[np.int_] | NDArray[np.bool_]):
+    def del_electrodes(self, e: int | list[int] | Array[int, N] | Array[bool, A]):
         """
         delete electrode(s) *e* from the current channelmap.
 
@@ -394,7 +395,7 @@ class BlueprintFunctions(Generic[M, E]):
             self.probe.del_electrode(channelmap, t)
 
     @doc_link()
-    def selected_electrodes(self, chmap=None) -> NDArray[np.int_]:
+    def selected_electrodes(self, chmap=None) -> Array[int, N]:
         """
         The selected electrodes in the current channelmap.
 
@@ -554,7 +555,7 @@ class BlueprintFunctions(Generic[M, E]):
                 blueprint[i] = category
         return blueprint
 
-    def index_blueprint(self, electrodes: ELECTRODES) -> NDArray[np.int_]:
+    def index_blueprint(self, electrodes: ELECTRODES) -> Array[int, N]:
         """
         Get an electrode index array from an electrode list.
 
@@ -625,7 +626,7 @@ class BlueprintFunctions(Generic[M, E]):
 
     @blueprint_function
     @doc_link()
-    def set(self, blueprint: BLUEPRINT, mask: int | list[int] | NDArray[np.bool_] | NDArray[np.int_], category: int) -> BLUEPRINT:
+    def set(self, blueprint: BLUEPRINT, mask: int | list[int] | Array[bool, A] | Array[int, N], category: int) -> BLUEPRINT:
         """
         Set *category* on the blueprint with a *mask*.
 
@@ -653,7 +654,7 @@ class BlueprintFunctions(Generic[M, E]):
 
     @blueprint_function
     @doc_link()
-    def unset(self, blueprint: BLUEPRINT, mask: int | list[int] | NDArray[np.bool_] | NDArray[np.int_]) -> BLUEPRINT:
+    def unset(self, blueprint: BLUEPRINT, mask: int | list[int] | Array[bool, A] | Array[int, N]) -> BLUEPRINT:
         """
         unset electrodes in the *blueprint* with a *mask*.
 
@@ -666,7 +667,7 @@ class BlueprintFunctions(Generic[M, E]):
         return self.set(blueprint, mask, self.CATE_UNSET)
 
     @doc_link()
-    def __setitem__(self, mask: int | NDArray[np.bool_] | NDArray[np.int_], category: int | str):
+    def __setitem__(self, mask: int | Array[bool, A] | Array[int, N], category: int | str):
         """
         Set a *category* to the blueprint with a *mask*.
         The new *category* only apply on unset electrodes.
@@ -680,7 +681,7 @@ class BlueprintFunctions(Generic[M, E]):
         self.set_blueprint(self.merge(blueprint, self.set(blueprint, mask, category)))
 
     @doc_link()
-    def __delitem__(self, mask: int | NDArray[np.bool_] | NDArray[np.int_]):
+    def __delitem__(self, mask: int | Array[bool, A] | Array[int, N]):
         """
         unset electrodes in the *blueprint* with a *mask*.
 
@@ -725,7 +726,7 @@ class BlueprintFunctions(Generic[M, E]):
 
     @blueprint_function(set_return=False)
     @doc_link()
-    def count_categories(self, blueprint: BLUEPRINT, categories: int | list[int], mask: NDArray[np.bool_] = None) -> int:
+    def count_categories(self, blueprint: BLUEPRINT, categories: int | list[int], mask: Array[bool, A] = None) -> int:
         """
         count number of electrode belonging to *categories*.
 
@@ -744,7 +745,7 @@ class BlueprintFunctions(Generic[M, E]):
 
     @blueprint_function(set_return=False)
     @doc_link()
-    def mask(self, blueprint: BLUEPRINT, categories: int | list[int] = None) -> NDArray[np.bool_]:
+    def mask(self, blueprint: BLUEPRINT, categories: int | list[int] = None) -> Array[bool, A]:
         """
         Masking electrode belong to the categories.
 
@@ -759,14 +760,14 @@ class BlueprintFunctions(Generic[M, E]):
 
     @overload
     def invalid(self, blueprint: BLUEPRINT, *,
-                electrodes: int | ELECTRODES | NDArray[np.bool_] | NDArray[np.int_] | M = None,
+                electrodes: int | ELECTRODES | Array[bool, A] | Array[int, N] | M = None,
                 categories: int | list[int] = None,
-                overwrite: bool = False) -> NDArray[np.bool_]:
+                overwrite: bool = False) -> Array[bool, A]:
         pass
 
     @overload
     def invalid(self, blueprint: BLUEPRINT, *,
-                electrodes: int | ELECTRODES | NDArray[np.bool_] | NDArray[np.int_] | M = None,
+                electrodes: int | ELECTRODES | Array[bool, A] | Array[int, N] | M = None,
                 categories: int | list[int] = None,
                 value: int,
                 overwrite: bool = False) -> BLUEPRINT:
@@ -775,7 +776,7 @@ class BlueprintFunctions(Generic[M, E]):
     @blueprint_function
     @doc_link()
     def invalid(self, blueprint: BLUEPRINT, *,
-                electrodes: int | ELECTRODES | NDArray[np.bool_] | NDArray[np.int_] | M = None,
+                electrodes: int | ELECTRODES | Array[bool, A] | Array[int, N] | M = None,
                 categories: int | list[int] = None,
                 value: int = None,
                 overwrite: bool = False):
@@ -802,11 +803,11 @@ class BlueprintFunctions(Generic[M, E]):
     # external functions #
     # ================== #
 
-    def move(self, a: NDArray, *,
+    def move(self, a: Array[DTYPE, N], *,
              tx: int = 0, ty: int = 0,
-             mask: NDArray[np.bool_] = None,
+             mask: Array[bool, N] = None,
              axis: int = 0,
-             init: float = 0) -> NDArray:
+             init: float = 0) -> Array[DTYPE, N]:
         """
         Move blueprint zone.
 
@@ -821,11 +822,11 @@ class BlueprintFunctions(Generic[M, E]):
         from .edit.moving import move
         return move(self, a, tx=tx, ty=ty, mask=mask, axis=axis, init=init)
 
-    def move_i(self, a: NDArray, *,
+    def move_i(self, a: Array[DTYPE, N], *,
                tx: int = 0, ty: int = 0,
-               mask: NDArray[np.bool_] = None,
+               mask: Array[bool, N] = None,
                axis: int = 0,
-               init: float = 0) -> NDArray:
+               init: float = 0) -> Array[DTYPE, N]:
         """
         Move blueprint zone by steps of electrode interval space.
 
@@ -959,7 +960,7 @@ class BlueprintFunctions(Generic[M, E]):
     # ==================== #
 
     @doc_link()
-    def load_data(self, file: str | Path) -> NDArray[np.float_]:
+    def load_data(self, file: str | Path) -> Array[float, A]:
         """
         Load a numpy array that can be parsed by {ProbeDesp#load_blueprint()}.
         The data value is read from category value for electrodes.
@@ -976,9 +977,9 @@ class BlueprintFunctions(Generic[M, E]):
         from .edit.data import load_data
         return load_data(self, file)
 
-    def interpolate_nan(self, a: NDArray[np.float_],
+    def interpolate_nan(self, a: Array[float, N],
                         kernel: int | tuple[int, int] = 1,
-                        f: str | Callable[[NDArray[np.float_]], float] = 'mean') -> NDArray[np.float_]:
+                        f: str | Callable[[Array[float, N]], float] = 'mean') -> Array[float, N]:
         """
         Interpolate the NaN value in the data *a*.
 
@@ -1044,7 +1045,7 @@ class BlueprintFunctions(Generic[M, E]):
         return None
 
     @doc_link(BlueprintScriptView='neurocarto.views.blueprint_script.BlueprintScriptView')
-    def draw(self, a: NDArray[np.float_] | None):
+    def draw(self, a: Array[float, A] | None):
         """
         Send a drawable data array *a*  to a {BlueprintScriptView}.
 
@@ -1166,7 +1167,7 @@ class BlueprintFunctions(Generic[M, E]):
             raise RuntimeError()
 
     @doc_link()
-    def capture_electrode(self, index: NDArray[np.int_] | NDArray[np.bool_],
+    def capture_electrode(self, index: Array[int, N] | Array[bool, A],
                           state: list[int] = None):
         """
         Capture electrodes.
@@ -1180,7 +1181,7 @@ class BlueprintFunctions(Generic[M, E]):
             capture_electrode(self, controller, index, state)
 
     @doc_link()
-    def captured_electrodes(self, all=False) -> NDArray[np.int_]:
+    def captured_electrodes(self, all=False) -> Array[int, N]:
         """
         get captured electrodes.
 
@@ -1196,7 +1197,7 @@ class BlueprintFunctions(Generic[M, E]):
 
     @doc_link()
     def set_state_for_captured(self, state: int,
-                               index: NDArray[np.int_] | NDArray[np.bool_] = None):
+                               index: Array[int, N] | Array[bool, A] = None):
         """
         Set state for captured electrodes.
 
@@ -1211,7 +1212,7 @@ class BlueprintFunctions(Generic[M, E]):
 
     @doc_link()
     def set_category_for_captured(self, category: int,
-                                  index: NDArray[np.int_] | NDArray[np.bool_] = None):
+                                  index: Array[int, N] | Array[bool, A] = None):
         """
         Set category for captured electrodes.
 

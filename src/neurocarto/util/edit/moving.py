@@ -1,7 +1,7 @@
 import numpy as np
-from numpy.typing import NDArray
 
 from neurocarto.probe import ElectrodeDesp
+from neurocarto.typing import *
 from neurocarto.util.util_blueprint import BlueprintFunctions
 
 __all__ = [
@@ -11,8 +11,8 @@ __all__ = [
 ]
 
 
-def contact_matrix(electrodes: list[ElectrodeDesp] | NDArray[np.complex_],
-                   step: float | tuple[float, float] = 1) -> NDArray[np.bool_]:
+def contact_matrix(electrodes: list[ElectrodeDesp] | Array[complex, N, N],
+                   step: float | tuple[float, float] = 1) -> Array[bool, N, N]:
     """
     norm-1 contact matrix.
 
@@ -47,7 +47,7 @@ def contact_matrix(electrodes: list[ElectrodeDesp] | NDArray[np.complex_],
     return dx & dy
 
 
-def step_matrix(electrodes: list[ElectrodeDesp] | NDArray[np.complex_], dx: float = 0, dy: float = 0) -> NDArray[np.complex_]:
+def step_matrix(electrodes: list[ElectrodeDesp] | Array[complex, N, N], dx: float = 0, dy: float = 0) -> Array[complex, N, N]:
     """
     norm-1 stepping matrix.
 
@@ -64,7 +64,7 @@ def step_matrix(electrodes: list[ElectrodeDesp] | NDArray[np.complex_], dx: floa
         raise TypeError()
 
 
-def _step_matrix_electrodes(electrodes: list[ElectrodeDesp], dx: float = 0, dy: float = 0) -> NDArray[np.complex_]:
+def _step_matrix_electrodes(electrodes: list[ElectrodeDesp], dx: float = 0, dy: float = 0) -> Array[complex, A, A]:
     s = np.array([it.s for it in electrodes], dtype=int)
     x = np.array([it.x for it in electrodes], dtype=int)
     y = np.array([it.y for it in electrodes], dtype=int)
@@ -84,7 +84,7 @@ def _step_matrix_electrodes(electrodes: list[ElectrodeDesp], dx: float = 0, dy: 
     return xx + yy * 1j
 
 
-def _step_matrix_matrix(electrodes: NDArray[np.complex_], dx: float = 0, dy: float = 0) -> NDArray[np.complex_]:
+def _step_matrix_matrix(electrodes: Array[complex, N, N], dx: float = 0, dy: float = 0) -> Array[complex, N, N]:
     xx = np.real(electrodes)
     yy = np.imag(electrodes)
 
@@ -100,7 +100,7 @@ def _step_matrix_matrix(electrodes: NDArray[np.complex_], dx: float = 0, dy: flo
     return xx / dx + yy / dy * 1j
 
 
-def distance_matrix(electrodes: list[ElectrodeDesp]) -> NDArray[np.complex_]:
+def distance_matrix(electrodes: list[ElectrodeDesp]) -> Array[complex, A, A]:
     """
     norm-2 distance matrix.
 
@@ -119,11 +119,11 @@ def distance_matrix(electrodes: list[ElectrodeDesp]) -> NDArray[np.complex_]:
     return xx + yy * 1j
 
 
-def move(self: BlueprintFunctions, a: NDArray, *,
+def move(self: BlueprintFunctions, a: Array[DTYPE, N], *,
          tx: int = 0, ty: int = 0,
-         mask: NDArray[np.bool_] = None,
+         mask: Array[bool, N] = None,
          axis: int = 0,
-         init: float = 0) -> NDArray:
+         init: float = 0) -> Array[DTYPE, N]:
     s = self.s
     x = self.x
     y = self.y
@@ -159,7 +159,7 @@ def move(self: BlueprintFunctions, a: NDArray, *,
         jj = np.delete(jj, rm)
 
     if a.ndim > 1:
-        _index: list[slice | NDArray[np.int_]] = [slice(None)] * a.ndim
+        _index = [slice(None)] * a.ndim
         _index[axis] = ii
         ii = tuple(_index)
         _index[axis] = jj
@@ -171,11 +171,11 @@ def move(self: BlueprintFunctions, a: NDArray, *,
     return ret
 
 
-def move_i(self: BlueprintFunctions, a: NDArray, *,
+def move_i(self: BlueprintFunctions, a: Array[DTYPE, N], *,
            tx: int = 0, ty: int = 0,
-           mask: NDArray[np.bool_] = None,
+           mask: Array[bool, N] = None,
            axis: int = 0,
-           init: float = 0) -> NDArray:
+           init: float = 0) -> Array[DTYPE, N]:
     if tx == 0 and ty == 0:
         return a
 
@@ -209,7 +209,7 @@ def move_i(self: BlueprintFunctions, a: NDArray, *,
         jj = np.delete(jj, rm)
 
     if a.ndim > 1:
-        _index: list[slice | NDArray[np.int_]] = [slice(None)] * a.ndim
+        _index = [slice(None)] * a.ndim
         _index[axis] = ii
         ii = tuple(_index)
         _index[axis] = jj
@@ -222,11 +222,11 @@ def move_i(self: BlueprintFunctions, a: NDArray, *,
 
 
 def fill(self: BlueprintFunctions,
-         blueprint: NDArray[np.int_],
+         blueprint: Array[int, A],
          categories: int | list[int] = None, *,
          threshold: int = None,
          gap: int | None = 1,
-         unset: bool = False) -> NDArray[np.int_]:
+         unset: bool = False) -> Array[int, A]:
     if len(blueprint) != len(self.s):
         raise ValueError()
 
@@ -254,7 +254,7 @@ def fill(self: BlueprintFunctions,
         if cluster == 0:
             continue
 
-        area: NDArray[np.bool_] = clustering == cluster
+        area: Array[bool, A] = clustering == cluster
         if threshold is not None:
             if np.count_nonzero(area) < threshold:
                 if unset:
@@ -295,13 +295,13 @@ def fill(self: BlueprintFunctions,
 
 
 def extend(self: BlueprintFunctions,
-           blueprint: NDArray[np.int_],
+           blueprint: Array[int, A],
            category: int,
            step: int | tuple[int, int],
            value: int = None, *,
            threshold: int | tuple[int, int] = None,
            bi: bool = True,
-           overwrite: bool = False) -> NDArray[np.int_]:
+           overwrite: bool = False) -> Array[int, A]:
     if len(blueprint) != len(self.s):
         raise ValueError()
 
@@ -336,7 +336,7 @@ def extend(self: BlueprintFunctions,
         if cluster == 0:
             continue
 
-        area: NDArray[np.bool_] = clustering == cluster
+        area: Array[bool, A] = clustering == cluster
         if threshold is not None and not _check_area_size(np.count_nonzero(area), threshold):
             continue
 
@@ -355,11 +355,11 @@ def extend(self: BlueprintFunctions,
 
 
 def reduce(self: BlueprintFunctions,
-           blueprint: NDArray[np.int_],
+           blueprint: Array[int, A],
            category: int,
            step: int | tuple[int, int], *,
            threshold: int | tuple[int, int] = None,
-           bi: bool = True) -> NDArray[np.int_]:
+           bi: bool = True) -> Array[int, A]:
     if len(blueprint) != len(self.s):
         raise ValueError()
 
@@ -391,7 +391,7 @@ def reduce(self: BlueprintFunctions,
         if cluster == 0:
             continue
 
-        area: NDArray[np.bool_] = clustering == cluster
+        area: Array[bool, A] = clustering == cluster
         if threshold is not None and not _check_area_size(np.count_nonzero(area), threshold):
             continue
 

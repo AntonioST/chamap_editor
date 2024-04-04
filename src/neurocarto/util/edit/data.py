@@ -2,15 +2,15 @@ from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
-from numpy.typing import NDArray
 
+from neurocarto.typing import *
 from neurocarto.util.util_blueprint import BlueprintFunctions
 from .moving import move_i
 
 __all__ = ['load_data', 'interpolate_nan']
 
 
-def load_data(self: BlueprintFunctions, file: str | Path) -> NDArray[np.float_]:
+def load_data(self: BlueprintFunctions, file: str | Path) -> Array[float, A]:
     e = self.probe.all_electrodes(self.channelmap)
     for t in e:
         t.category = np.nan
@@ -19,9 +19,9 @@ def load_data(self: BlueprintFunctions, file: str | Path) -> NDArray[np.float_]:
 
 
 def interpolate_nan(self: BlueprintFunctions,
-                    a: NDArray[np.float_],
+                    a: Array[float, N],
                     kernel: int | tuple[int, int] = 1,
-                    f: str | Callable[[NDArray[np.float_]], float] = 'mean') -> NDArray[np.float_]:
+                    f: str | Callable[[Array[float, N]], float] = 'mean') -> Array[float, N]:
     if isinstance(f, str):
         if f == 'mean':
             f = np.nanmean
